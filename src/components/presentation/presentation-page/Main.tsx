@@ -12,6 +12,8 @@ import {
   type ThemeProperties,
 } from "@/lib/presentation/themes";
 import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 
 import { getCustomThemeById } from "@/app/_actions/presentation/theme-actions";
 import debounce from "lodash.debounce";
@@ -237,6 +239,12 @@ export default function PresentationPage() {
       themeData={currentThemeData ?? undefined}
     >
       <div className="mx-auto max-w-[90%] space-y-8 p-8 pt-16">
+        <div className="flex justify-end mb-4">
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            Export to PPTX
+          </Button>
+        </div>
         <div className="space-y-8">
           <PresentationSlidesView
             handleSlideChange={handleSlideChange}
