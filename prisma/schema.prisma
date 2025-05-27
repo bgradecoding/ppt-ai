@@ -61,8 +61,9 @@ model User {
   // CustomTheme CustomTheme[] // Removed, CustomTheme.userId will be optional
 
   // GeneratedImage GeneratedImage[] // Removed, GeneratedImage.userId will be optional
-  CustomTheme    CustomTheme[]
-  GeneratedImage GeneratedImage[]
+  CustomTheme           CustomTheme[]
+  GeneratedImage        GeneratedImage[]
+  presentationTemplates PresentationTemplate[] // Add this line
 }
 
 enum DocumentType {
@@ -98,16 +99,21 @@ model BaseDocument {
 
 model Presentation {
   id                String       @id @default(cuid())
-  content           Json // Presentation content including slides, theme, etc.
+  content           Json
   theme             String       @default("default")
   imageModel        String? // The image model used for generating images
   presentationStyle String? // The style of the presentation
   language          String?      @default("en-US") // The language of the presentation
-  outline           String[] // Store the presentation outline
+  outline           String[]
   base              BaseDocument @relation(fields: [id], references: [id], onDelete: Cascade)
-  templateId        String?
-  customThemeId     String? // Reference to custom theme if used
-  customTheme       CustomTheme? @relation(fields: [customThemeId], references: [id])
+
+  // Add relation to PresentationTemplate
+  templateUsedId String?
+  templateUsed   PresentationTemplate? @relation("PresentationTemplateToPresentations", fields: [templateUsedId], references: [id])
+
+  customThemeId String?
+  customTheme   CustomTheme? @relation(fields: [customThemeId], references: [id])
+  generatedFilePath String? // Path to the generated .pptx file
 }
 
 model CustomTheme {
@@ -143,4 +149,19 @@ model GeneratedImage {
   userId    String? // Made optional
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade) // Made optional
   prompt    String
+}
+
+model PresentationTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  filename    String // Original filename of the uploaded pptx
+  storedFile  String // Path or key to the stored pptx file
+  userId      String? // Optional: if templates are user-specific
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relation to presentations created from this template
+  presentations Presentation[] @relation("PresentationTemplateToPresentations")
 }
