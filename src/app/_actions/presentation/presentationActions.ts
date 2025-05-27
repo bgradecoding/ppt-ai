@@ -2,8 +2,96 @@
 
 import { type PlateSlide } from "@/components/presentation/utils/parser";
 // import { auth } from "@/server/auth"; // Removed auth import
-import { db } from "@/server/db";
+import { db } from "@/server/db"; // Existing prisma client import, will use this.
 import { type InputJsonValue } from "@prisma/client/runtime/library";
+
+// Imports for generatePresentationFromTemplate
+import PptxGenJS from 'pptxgenjs';
+import { masterDefinitions } from '@/lib/presentation/pptxgenjsMasters';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+
+
+// Interface definitions for generatePresentationFromTemplate
+interface SlideData {
+  masterName: keyof typeof masterDefinitions;
+  data: { [placeholder: string]: string }; 
+}
+
+interface GeneratePresentationInput {
+  masterSetName?: string;
+  slidesData: SlideData[];
+  newPresentationTitle: string;
+  userId: string; 
+  templateUploadId?: string;
+}
+
+export async function generatePresentationFromTemplate(input: GeneratePresentationInput) {
+  'use server';
+  try {
+    const pptx = new PptxGenJS();
+
+    // Define masters in the pptx instance
+    Object.values(masterDefinitions).forEach(masterDef => {
+      pptx.defineSlideMaster(masterDef);
+    });
+
+    // Add slides
+    input.slidesData.forEach(slideDef => {
+      const slide = pptx.addSlide({ masterName: slideDef.masterName });
+      for (const placeholderName in slideDef.data) {
+        const value = slideDef.data[placeholderName];
+        // Basic handling: if value looks like an image URL or data URI, try addImage, else addText
+        if ((placeholderName.toLowerCase().includes('image') || placeholderName.toLowerCase().includes('logo') || placeholderName.toLowerCase().includes('picture')) && 
+            (value.startsWith('http') || value.startsWith('data:image'))) {
+          slide.addImage({ path: value, placeholder: placeholderName });
+        } else {
+          slide.addText(value, { placeholder: placeholderName });
+        }
+      }
+    });
+
+    const UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'generated_presentations');
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+    const uniqueFilename = `${uuidv4()}.pptx`;
+    const outputPath = path.join(UPLOAD_DIR, uniqueFilename);
+
+    await pptx.writeFile({ fileName: outputPath });
+
+    // Create BaseDocument and Presentation records
+    // Using existing 'db' import for Prisma client.
+    const baseDocument = await db.baseDocument.create({
+      data: {
+        title: input.newPresentationTitle,
+        userId: input.userId,
+        type: 'PRESENTATION',
+        documentType: 'PRESENTATION', 
+        isPublic: false, 
+      },
+    });
+
+    const presentation = await db.presentation.create({
+      data: {
+        id: baseDocument.id, 
+        content: input.slidesData as any, // Store input slide data as JSON
+        theme: input.masterSetName || 'DefaultMasters', 
+        templateUsedId: input.templateUploadId,
+        generatedFilePath: outputPath,
+      },
+    });
+
+    return { success: true, presentationId: baseDocument.id, filePath: outputPath };
+
+  } catch (error) {
+    console.error('Error generating presentation:', error);
+    if (error instanceof Error) {
+      return { success: false, error: `Failed to generate presentation: ${error.message}` };
+    }
+    return { success: false, error: 'An unknown error occurred while generating the presentation.' };
+  }
+}
+
 
 export async function createPresentation(
   content: {
