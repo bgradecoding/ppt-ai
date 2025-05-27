@@ -92,6 +92,85 @@ export async function generatePresentationFromTemplate(input: GeneratePresentati
   }
 }
 
+export async function exportPresentationToPptx(presentationId: string) {
+  "use server";
+
+  try {
+    // Fetch Presentation Data
+    const presentationDocument = await db.baseDocument.findUnique({
+      where: { id: presentationId },
+      include: {
+        presentation: true,
+      },
+    });
+
+    if (!presentationDocument?.presentation) {
+      return { success: false, error: "Presentation not found" };
+    }
+
+    const presentationContent = presentationDocument.presentation.content as unknown as { slides: PlateSlide[] };
+
+    // Initialize PptxGenJS
+    const pptx = new PptxGenJS();
+
+    // Define masters in the pptx instance
+    Object.values(masterDefinitions).forEach(masterDef => {
+      pptx.defineSlideMaster(masterDef);
+    });
+
+    // Process Slides
+    if (presentationContent?.slides) {
+      for (const slide of presentationContent.slides) { // slide is PlateSlide
+        const pptxSlide = pptx.addSlide({ masterName: "CONTENT_MASTER" });
+        let textContent = "";
+
+        // PlateSlide.content is an array of PlateNode
+        // PlateNode is TElement which has children (TDescendant[])
+        if (slide.content && Array.isArray(slide.content)) {
+          for (const node of slide.content) { // node is PlateNode (TElement)
+            if (node.type === 'img' && 'url' in node && typeof node.url === 'string') {
+              // Basic Image Handling
+              const imageUrl = node.url;
+              if (imageUrl) {
+                pptxSlide.addImage({ path: imageUrl, x: 1, y: 1, w: 8, h: 4.5 });
+              }
+            } else if (node.children && Array.isArray(node.children)) {
+              // Handle text-based elements (paragraphs, headings, etc.)
+              for (const child of node.children) { // child is TDescendant (TElement or TText)
+                if (child && 'text' in child && typeof child.text === 'string') {
+                  textContent += child.text + "\n"; // Add newline between text pieces
+                }
+              }
+            }
+          }
+        }
+        
+        // Add concatenated text to bodyPlaceholder if there's any text
+        if (textContent.trim().length > 0) {
+          pptxSlide.addText(textContent.trim(), { placeholder: "bodyPlaceholder" });
+        }
+      }
+    }
+
+    // File Generation
+    const UPLOAD_DIR = path.join(process.cwd(), "uploads", "generated_presentations");
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+    const uniqueFilename = `${uuidv4()}.pptx`;
+    const outputPath = path.join(UPLOAD_DIR, uniqueFilename);
+
+    await pptx.writeFile({ fileName: outputPath });
+
+    return { success: true, filePath: outputPath };
+
+  } catch (error) {
+    console.error("Error exporting presentation to PPTX:", error);
+    if (error instanceof Error) {
+      return { success: false, error: `Failed to export presentation: ${error.message}` };
+    }
+    return { success: false, error: "An unknown error occurred while exporting the presentation." };
+  }
+}
+
 
 export async function createPresentation(
   content: {
