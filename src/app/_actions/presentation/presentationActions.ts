@@ -1,7 +1,7 @@
 "use server";
 
 import { type PlateSlide } from "@/components/presentation/utils/parser";
-import { auth } from "@/server/auth";
+// import { auth } from "@/server/auth"; // Removed auth import
 import { db } from "@/server/db";
 import { type InputJsonValue } from "@prisma/client/runtime/library";
 
@@ -16,11 +16,11 @@ export async function createPresentation(
   presentationStyle?: string,
   language?: string
 ) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
-  const userId = session.user.id;
+  // const session = await auth(); // Removed auth check
+  // if (!session?.user) {
+  //   throw new Error("Unauthorized");
+  // }
+  // const userId = session.user.id; // Removed userId
 
   try {
     const presentation = await db.baseDocument.create({
@@ -28,7 +28,7 @@ export async function createPresentation(
         type: "PRESENTATION",
         documentType: "presentation",
         title: title ?? "Untitled Presentation",
-        userId,
+        // userId, // Removed userId
         presentation: {
           create: {
             content: content as unknown as InputJsonValue,
@@ -89,10 +89,10 @@ export async function updatePresentation({
   presentationStyle?: string;
   language?: string;
 }) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
+  // const session = await auth(); // Removed auth check
+  // if (!session?.user) {
+  //   throw new Error("Unauthorized");
+  // }
 
   try {
     // Extract values from content if provided there
@@ -137,10 +137,10 @@ export async function updatePresentation({
 }
 
 export async function updatePresentationTitle(id: string, title: string) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
+  // const session = await auth(); // Removed auth check
+  // if (!session?.user) {
+  //   throw new Error("Unauthorized");
+  // }
 
   try {
     const presentation = await db.baseDocument.update({
@@ -170,19 +170,20 @@ export async function deletePresentation(id: string) {
 }
 
 export async function deletePresentations(ids: string[]) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
+  // const session = await auth(); // Removed auth check
+  // if (!session?.user) {
+  //   throw new Error("Unauthorized");
+  // }
 
   try {
     // Delete the base documents using deleteMany (this will cascade delete the presentations)
+    // userId filter removed, allowing deletion of any presentation by ID
     const result = await db.baseDocument.deleteMany({
       where: {
         id: {
           in: ids,
         },
-        userId: session.user.id, // Ensure only user's own presentations can be deleted
+        // userId: session.user.id, // Ensure only user's own presentations can be deleted
       },
     });
 
@@ -218,10 +219,10 @@ export async function deletePresentations(ids: string[]) {
 
 // Get the presentation with the presentation content
 export async function getPresentation(id: string) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
+  // const session = await auth(); // Removed auth check
+  // if (!session?.user) {
+  //   throw new Error("Unauthorized");
+  // }
 
   try {
     const presentation = await db.baseDocument.findUnique({
@@ -245,10 +246,10 @@ export async function getPresentation(id: string) {
 }
 
 export async function getPresentationContent(id: string) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
+  // const session = await auth(); // Removed auth check
+  // if (!session?.user) {
+  //   throw new Error("Unauthorized");
+  // }
 
   try {
     const presentation = await db.baseDocument.findUnique({
@@ -272,13 +273,13 @@ export async function getPresentationContent(id: string) {
       };
     }
 
-    // Check if the user has access to this presentation
-    if (presentation.userId !== session.user.id && !presentation.isPublic) {
-      return {
-        success: false,
-        message: "Unauthorized access",
-      };
-    }
+    // Check if the user has access to this presentation - REMOVED
+    // if (presentation.userId !== session.user.id && !presentation.isPublic) {
+    //   return {
+    //     success: false,
+    //     message: "Unauthorized access",
+    //   };
+    // }
 
     return {
       success: true,
@@ -294,10 +295,10 @@ export async function getPresentationContent(id: string) {
 }
 
 export async function updatePresentationTheme(id: string, theme: string) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
+  // const session = await auth(); // Removed auth check
+  // if (!session?.user) {
+  //   throw new Error("Unauthorized");
+  // }
 
   try {
     const presentation = await db.presentation.update({
@@ -320,10 +321,10 @@ export async function updatePresentationTheme(id: string, theme: string) {
 }
 
 export async function duplicatePresentation(id: string, newTitle?: string) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
+  // const session = await auth(); // Removed auth check
+  // if (!session?.user) {
+  //   throw new Error("Unauthorized");
+  // }
 
   try {
     // Get the original presentation
@@ -347,8 +348,8 @@ export async function duplicatePresentation(id: string, newTitle?: string) {
         type: "PRESENTATION",
         documentType: "presentation",
         title: newTitle ?? `${original.title} (Copy)`,
-        userId: session.user.id,
-        isPublic: false,
+        // userId: session.user.id, // Removed userId
+        isPublic: false, // Kept isPublic behavior for now
         presentation: {
           create: {
             content: original.presentation.content as unknown as InputJsonValue,

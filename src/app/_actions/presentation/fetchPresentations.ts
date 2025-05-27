@@ -1,7 +1,7 @@
 "use server";
 import "server-only";
 
-import { auth } from "@/server/auth";
+// import { auth } from "@/server/auth"; // Removed auth import
 import { db } from "@/server/db";
 import { type Prisma, DocumentType } from "@prisma/client";
 
@@ -14,22 +14,24 @@ export type PresentationDocument = Prisma.BaseDocumentGetPayload<{
 const ITEMS_PER_PAGE = 10;
 
 export async function fetchPresentations(page = 0) {
-  const session = await auth();
-  const userId = session?.user.id;
+  // User authentication removed
+  // const session = await auth();
+  // const userId = session?.user.id;
 
-  if (!userId) {
-    return {
-      items: [],
-      hasMore: false,
-    };
-  }
+  // if (!userId) {
+  //   return {
+  //     items: [],
+  //     hasMore: false,
+  //   };
+  // }
 
   const skip = page * ITEMS_PER_PAGE;
 
+  // Modified to fetch all presentations, not just for a specific user
   const items = await db.baseDocument.findMany({
     where: {
-      userId,
       type: DocumentType.PRESENTATION,
+      // userId filter removed
     },
     orderBy: {
       updatedAt: "desc",
@@ -90,20 +92,22 @@ export async function fetchPublicPresentations(page = 0) {
 }
 
 export async function fetchUserPresentations(userId: string, page = 0) {
-  const session = await auth();
-  const currentUserId = session?.user.id;
+  // User authentication removed for currentUserId
+  // const session = await auth();
+  // const currentUserId = session?.user.id;
 
   const skip = page * ITEMS_PER_PAGE;
 
   const [items, total] = await Promise.all([
     db.baseDocument.findMany({
       where: {
-        userId,
+        userId, // Fetch presentations for the specified userId
         type: DocumentType.PRESENTATION,
-        OR: [
-          { isPublic: true },
-          { userId: currentUserId }, // Include private presentations if the user is viewing their own
-        ],
+        isPublic: true, // Only fetch public presentations of this user
+        // OR: [
+        //   { isPublic: true },
+        //   { userId: currentUserId }, // Logic relying on currentUserId removed
+        // ],
       },
       orderBy: {
         updatedAt: "desc",
@@ -116,9 +120,10 @@ export async function fetchUserPresentations(userId: string, page = 0) {
     }),
     db.baseDocument.count({
       where: {
-        userId,
+        userId, // Count presentations for the specified userId
         type: DocumentType.PRESENTATION,
-        OR: [{ isPublic: true }, { userId: currentUserId }],
+        isPublic: true, // Only count public presentations of this user
+        // OR: [{ isPublic: true }, { userId: currentUserId }], // Logic relying on currentUserId removed
       },
     }),
   ]);

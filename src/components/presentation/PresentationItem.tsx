@@ -42,10 +42,7 @@ import {
   getPresentationContent,
   updatePresentationTitle,
 } from "@/app/_actions/presentation/presentationActions";
-import {
-  addToFavorites,
-  removeFromFavorites,
-} from "@/app/_actions/presentation/toggleFavorite";
+// Removed import for addToFavorites, removeFromFavorites
 
 interface PresentationItemProps {
   presentation: BaseDocument & {
@@ -55,7 +52,7 @@ interface PresentationItemProps {
       theme: string;
     } | null;
   };
-  isFavorited?: boolean;
+  // isFavorited?: boolean; // Removed isFavorited prop
   isSelecting?: boolean;
   onSelect?: (id: string) => void;
   isSelected?: boolean;
@@ -64,7 +61,7 @@ interface PresentationItemProps {
 
 export function PresentationItem({
   presentation,
-  isFavorited = false,
+  // isFavorited = false, // Removed isFavorited prop
   isSelecting = false,
   onSelect,
   isSelected = false,
@@ -163,46 +160,9 @@ export function PresentationItem({
     },
   });
 
-  const { mutate: favoriteMutation, isPending: isFavoritePending } =
-    useMutation({
-      mutationFn: async () => {
-        if (isFavorited) {
-          return removeFromFavorites(presentation.id);
-        }
-        return addToFavorites(presentation.id);
-      },
-      onSuccess: async (result) => {
-        if (!result.success) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to update favorites",
-          });
-          return;
-        }
-
-        await queryClient.invalidateQueries({
-          queryKey: ["documents", "favorites"],
-        });
-        await queryClient.invalidateQueries({
-          queryKey: ["presentations-all"],
-        });
-
-        toast({
-          title: "Success",
-          description: isFavorited
-            ? "Presentation removed from favorites"
-            : "Presentation added to favorites",
-        });
-      },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to update favorites",
-        });
-      },
-    });
+  // Removed favoriteMutation
+  // const { mutate: favoriteMutation, isPending: isFavoritePending } =
+  //   useMutation({ ... });
 
   const handleClick = async (e: React.MouseEvent) => {
     if (isSelecting && onSelect) {
@@ -310,7 +270,8 @@ export function PresentationItem({
                   <Copy className="mr-2 h-4 w-4" />
                   Duplicate
                 </DropdownMenuItem>
-                <DropdownMenuItem
+                {/* Removed Favorite DropdownMenuItem */}
+                {/* <DropdownMenuItem
                   onClick={() => favoriteMutation()}
                   disabled={isFavoritePending}
                 >
@@ -321,7 +282,7 @@ export function PresentationItem({
                     )}
                   />
                   {isFavorited ? "Remove from favorites" : "Add to favorites"}
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuItem
                   onClick={() => setIsDeleteDialogOpen(true)}
                   disabled={isDeleting}

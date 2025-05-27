@@ -1,5 +1,5 @@
 import "server-only";
-import { auth } from "@/server/auth";
+// import { auth } from "@/server/auth"; // Removed auth import
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError, UTApi } from "uploadthing/server";
 
@@ -13,23 +13,25 @@ export const ourFileRouter = {
     // Set permissions and file types for this FileRoute
     .middleware(async ({}) => {
       // This code runs on your server before upload
-      const session = await auth();
+      // const session = await auth(); // Removed auth check
 
-      console.log(session);
+      // console.log(session); // Removed
       // If you throw, the user will not be able to upload
-      if (!session) throw new UploadThingError("Unauthorized");
+      // if (!session) throw new UploadThingError("Unauthorized"); // Removed auth check
 
       // Whatever is returned here is accessible in onUploadComplete as `metadata`
-      return { userId: session.user.id };
+      // For now, returning an empty object or some non-user-specific metadata if needed
+      return { uploadedBy: "anonymous" }; // Or simply return {};
     })
     .onUploadComplete(async ({ metadata, file }) => {
       // This code RUNS ON YOUR SERVER after upload
-      console.log("Upload complete for userId:", metadata.userId);
+      // console.log("Upload complete for userId:", metadata.userId); // metadata.userId removed
+      console.log("Upload complete for:", metadata.uploadedBy); // Using new metadata field
 
       console.log("file url", file.url);
 
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
-      return { uploadedBy: metadata.userId };
+      return { uploadedBy: metadata.uploadedBy }; // Returning the same metadata
     }),
 } satisfies FileRouter;
 

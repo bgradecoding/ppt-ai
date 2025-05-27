@@ -75,14 +75,14 @@ export const SlashInputElement = withRef<typeof PlateElement>(
   ({ ...props }, ref) => {
     const { children, editor, element } = props;
 
-    const { setImageGenerationModelOpen } = usePresentationState();
+    // const { setImageGenerationModelOpen } = usePresentationState(); // Commented out
     const handleSelect = (value: string) => {
       const rule = rules.find((r) => r.value === value);
       if (!rule) return;
 
       if (value == "Generate AI Image") {
-        setImageGenerationModelOpen(true);
-        console.log("clicked");
+        // setImageGenerationModelOpen(true); // Commented out
+        console.log("Generate AI Image clicked, but modal opening via global state is disabled.");
       } else {
         rule.onSelect(editor);
       }

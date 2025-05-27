@@ -1,6 +1,6 @@
 import { LangChainAdapter } from "ai";
 import { NextResponse } from "next/server";
-import { auth } from "@/server/auth";
+// import { auth } from "@/server/auth"; // Removed auth import
 import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
@@ -174,10 +174,10 @@ const model = new ChatOpenAI({
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // const session = await auth(); // Removed auth check
+    // if (!session) {
+    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // }
 
     const { title, outline, language, tone } =
       (await req.json()) as SlidesRequest;

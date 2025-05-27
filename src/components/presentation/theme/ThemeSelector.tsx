@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sheet";
 import { useQuery } from "@tanstack/react-query";
 import {
-  getUserCustomThemes,
+  getAllCustomThemes, // Changed from getUserCustomThemes
   getPublicCustomThemes,
 } from "@/app/_actions/presentation/theme-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -66,9 +66,9 @@ export function ThemeSelector() {
 
   // Fetch user themes with React Query
   const { data: userThemes = [], isLoading: isLoadingUserThemes } = useQuery({
-    queryKey: ["userThemes"],
+    queryKey: ["userThemes"], // Consider renaming this queryKey
     queryFn: async () => {
-      const result = await getUserCustomThemes();
+      const result = await getAllCustomThemes(); // Changed from getUserCustomThemes
       return result.success ? (result.themes as CustomTheme[]) : [];
     },
     enabled: isThemeSheetOpen,

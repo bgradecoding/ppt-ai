@@ -11,7 +11,7 @@ import { ShareButton } from "./buttons/ShareButton";
 import { PresentButton } from "./buttons/PresentButton";
 import { SaveStatus } from "./buttons/SaveStatus";
 import { Brain } from "@/components/ui/icons";
-import SideBarDropdown from "@/components/auth/Dropdown";
+// import SideBarDropdown from "@/components/auth/Dropdown"; // Removed import
 
 interface PresentationHeaderProps {
   title?: string;
@@ -60,8 +60,8 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
         {/* Present button - Only in presentation page, not outline */}
         {isPresentationPage && <PresentButton />}
 
-        {/* User profile dropdown - Keep this on all pages */}
-        {!isPresenting && <SideBarDropdown />}
+        {/* User profile dropdown - Keep this on all pages - REMOVED */}
+        {/* {!isPresenting && <SideBarDropdown />} */}
       </div>
     </header>
   );

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import NextAuthProvider from "@/provider/NextAuthProvider";
 import { ThemeProvider } from "@/provider/theme-provider";
 import TanStackQueryProvider from "@/provider/TanstackProvider";
 import { Inter } from "next/font/google";
@@ -20,15 +19,13 @@ export default async function RootLayout({
 }>) {
   return (
     <TanStackQueryProvider>
-      <NextAuthProvider>
-        <html lang="en">
-          <body className={`${inter.className} antialiased`}>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-              {children}
-            </ThemeProvider>
-          </body>
-        </html>
-      </NextAuthProvider>
+      <html lang="en">
+        <body className={`${inter.className} antialiased`}>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            {children}
+          </ThemeProvider>
+        </body>
+      </html>
     </TanStackQueryProvider>
   );
 }
