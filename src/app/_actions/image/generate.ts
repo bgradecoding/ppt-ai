@@ -1,24 +1,19 @@
 "use server";
 
 import { env } from "@/env";
-import Together from "together-ai";
+import OpenAI from "openai";
 import { db } from "@/server/db";
 // import { auth } from "@/server/auth"; // Removed auth import
 import { utapi } from "@/app/api/uploadthing/core";
 import { UTFile } from "uploadthing/server";
 
-const together = new Together({ apiKey: env.TOGETHER_AI_API_KEY });
+const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
-export type ImageModelList =
-  | "black-forest-labs/FLUX1.1-pro"
-  | "black-forest-labs/FLUX.1-schnell"
-  | "black-forest-labs/FLUX.1-schnell-Free"
-  | "black-forest-labs/FLUX.1-pro"
-  | "black-forest-labs/FLUX.1-dev";
+export type ImageModelList = "dall-e-3" | "dall-e-2";
 
 export async function generateImageAction(
   prompt: string,
-  model: ImageModelList = "black-forest-labs/FLUX.1-schnell-Free"
+  model: ImageModelList = "dall-e-3" // Set default model
 ) {
   // User authentication removed
   // const session = await auth();
@@ -29,35 +24,26 @@ export async function generateImageAction(
   try {
     console.log(`Generating image with model: ${model}`);
 
-    // Generate the image using Together AI
-    const response = (await together.images.create({
-      model: model,
+    // Generate the image using OpenAI
+    const response = await openai.images.generate({
+      model: model, // Use the model parameter
       prompt: prompt,
-      width: 1024,
-      height: 768,
-      steps: model.includes("schnell") ? 4 : 28, // Fewer steps for schnell models
       n: 1,
-    })) as unknown as {
-      id: string;
-      model: string;
-      object: string;
-      data: {
-        url: string;
-      }[];
-    };
+      size: "1024x1024", // DALL-E 3 and DALL-E 2 support this size
+    });
 
     const imageUrl = response.data[0]?.url;
 
     if (!imageUrl) {
-      throw new Error("Failed to generate image");
+      throw new Error("Failed to generate image with OpenAI");
     }
 
     console.log(`Generated image URL: ${imageUrl}`);
 
-    // Download the image from Together AI URL
+    // Download the image from OpenAI URL
     const imageResponse = await fetch(imageUrl);
     if (!imageResponse.ok) {
-      throw new Error("Failed to download image from Together AI");
+      throw new Error("Failed to download image from OpenAI");
     }
 
     const imageBlob = await imageResponse.blob();

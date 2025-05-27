@@ -9,20 +9,20 @@ export const env = createEnv({
       .default("development"),
 
     OPENAI_API_KEY: z.string(),
-    TOGETHER_AI_API_KEY: z.string(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
     // NEXTAUTH_URL removed
     // NEXTAUTH_SECRET removed
   },
-
+  clientPublic: {
+    OPENAI_API_KEY: z.string().min(1),
+  },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     NODE_ENV: process.env.NODE_ENV,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    TOGETHER_AI_API_KEY: process.env.TOGETHER_AI_API_KEY,
     // NEXTAUTH_SECRET removed
     // NEXTAUTH_URL removed
   },
