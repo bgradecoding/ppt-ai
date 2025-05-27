@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/server/auth";
+// import { auth } from "@/server/auth"; // Removed auth import
 import { db } from "@/server/db";
 import { z } from "zod";
 import { utapi } from "@/app/api/uploadthing/core";
@@ -19,13 +19,13 @@ export type ThemeFormData = z.infer<typeof themeSchema>;
 // Create a new custom theme
 export async function createCustomTheme(formData: ThemeFormData) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return {
-        success: false,
-        message: "You must be signed in to create a theme",
-      };
-    }
+    // const session = await auth(); // Removed auth check
+    // if (!session?.user) {
+    //   return {
+    //     success: false,
+    //     message: "You must be signed in to create a theme",
+    //   };
+    // }
 
     const validatedData = themeSchema.parse(formData);
 
@@ -36,7 +36,7 @@ export async function createCustomTheme(formData: ThemeFormData) {
         themeData: validatedData.themeData,
         logoUrl: validatedData.logoUrl,
         isPublic: validatedData.isPublic,
-        userId: session.user.id,
+        // userId: session.user.id, // Removed userId
       },
     });
 
@@ -74,28 +74,28 @@ export async function updateCustomTheme(
   formData: ThemeFormData,
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return {
-        success: false,
-        message: "You must be signed in to update a theme",
-      };
-    }
+    // const session = await auth(); // Removed auth check
+    // if (!session?.user) {
+    //   return {
+    //     success: false,
+    //     message: "You must be signed in to update a theme",
+    //   };
+    // }
 
     const validatedData = themeSchema.parse(formData);
 
-    // Verify ownership
-    const existingTheme = await db.customTheme.findUnique({
-      where: { id: themeId },
-    });
+    // Verify ownership - REMOVED
+    // const existingTheme = await db.customTheme.findUnique({
+    //   where: { id: themeId },
+    // });
 
-    if (!existingTheme) {
-      return { success: false, message: "Theme not found" };
-    }
+    // if (!existingTheme) {
+    //   return { success: false, message: "Theme not found" };
+    // }
 
-    if (existingTheme.userId !== session.user.id) {
-      return { success: false, message: "Not authorized to update this theme" };
-    }
+    // if (existingTheme.userId !== session.user.id) {
+    //   return { success: false, message: "Not authorized to update this theme" };
+    // }
 
     await db.customTheme.update({
       where: { id: themeId },
@@ -139,26 +139,26 @@ export async function updateCustomTheme(
 // Delete a custom theme
 export async function deleteCustomTheme(themeId: string) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return {
-        success: false,
-        message: "You must be signed in to delete a theme",
-      };
-    }
+    // const session = await auth(); // Removed auth check
+    // if (!session?.user) {
+    //   return {
+    //     success: false,
+    //     message: "You must be signed in to delete a theme",
+    //   };
+    // }
 
-    // Verify ownership
+    // Verify ownership - REMOVED
     const existingTheme = await db.customTheme.findUnique({
-      where: { id: themeId },
-    });
+       where: { id: themeId },
+     }); // Keep this to check if theme exists and get logoUrl
 
     if (!existingTheme) {
       return { success: false, message: "Theme not found" };
     }
 
-    if (existingTheme.userId !== session.user.id) {
-      return { success: false, message: "Not authorized to delete this theme" };
-    }
+    // if (existingTheme.userId !== session.user.id) { // Removed ownership check
+    //   return { success: false, message: "Not authorized to delete this theme" };
+    // }
 
     // Delete logo from uploadthing if exists
     if (existingTheme.logoUrl) {
@@ -191,25 +191,29 @@ export async function deleteCustomTheme(themeId: string) {
   }
 }
 
-// Get all custom themes for the current user
-export async function getUserCustomThemes() {
+// Get all custom themes (formerly getUserCustomThemes)
+export async function getAllCustomThemes() {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return {
-        success: false,
-        message: "You must be signed in to view your themes",
-        themes: [],
-      };
-    }
+    // const session = await auth(); // Removed auth check
+    // if (!session?.user) {
+    //   return {
+    //     success: false,
+    //     message: "You must be signed in to view your themes", // This message might need changing
+    //     themes: [],
+    //   };
+    // }
 
     const themes = await db.customTheme.findMany({
-      where: {
-        userId: session.user.id,
-      },
+      // where: { // Removed userId filter
+      //   userId: session.user.id,
+      // },
       orderBy: {
         createdAt: "desc",
       },
+      // Optionally, include user data if it's still relevant and available
+      // include: {
+      //   user: { select: { name: true } }
+      // }
     });
 
     return {

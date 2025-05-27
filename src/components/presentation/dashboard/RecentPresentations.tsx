@@ -46,10 +46,7 @@ import {
   getPresentationContent,
   updatePresentationTitle,
 } from "@/app/_actions/presentation/presentationActions";
-import {
-  addToFavorites,
-  removeFromFavorites,
-} from "@/app/_actions/presentation/toggleFavorite";
+// Removed import for addToFavorites, removeFromFavorites
 
 type PresentationDocument = BaseDocument & {
   presentation: {
@@ -141,46 +138,8 @@ export function RecentPresentations() {
     },
   });
 
-  const { mutate: favoriteMutation } = useMutation({
-    mutationFn: async (id: string) => {
-      // Try to add to favorites first
-      const result = await addToFavorites(id);
-      if (result.error === "Document is already in favorites") {
-        // If already favorited, remove from favorites
-        return removeFromFavorites(id);
-      }
-      return result;
-    },
-    onSuccess: async (result) => {
-      if (!result.success) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to update favorites",
-        });
-        return;
-      }
-
-      await queryClient.invalidateQueries({
-        queryKey: ["documents", "favorites"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["presentations-all"],
-      });
-
-      toast({
-        title: "Success",
-        description: "Favorite updated successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update favorites",
-      });
-    },
-  });
+  // Removed favoriteMutation
+  // const { mutate: favoriteMutation } = useMutation({ ... });
 
   const handlePresentationClick = async (
     presentation: PresentationDocument
@@ -280,9 +239,10 @@ export function RecentPresentations() {
     renameMutation({ id, currentTitle });
   };
 
-  const handleFavorite = (id: string) => {
-    favoriteMutation(id);
-  };
+  // Removed handleFavorite
+  // const handleFavorite = (id: string) => {
+  //   favoriteMutation(id);
+  // };
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString(undefined, {
@@ -384,13 +344,14 @@ export function RecentPresentations() {
                     <Pencil className="mr-2 h-4 w-4" />
                     Rename
                   </DropdownMenuItem>
-                  <DropdownMenuItem
+                  {/* Removed Favorite DropdownMenuItem */}
+                  {/* <DropdownMenuItem
                     onClick={() => handleFavorite(presentation.id)}
                     className="cursor-pointer"
                   >
                     <Star className="mr-2 h-4 w-4" />
                     Add to favorites
-                  </DropdownMenuItem>
+                  </DropdownMenuItem> */}
                   <DropdownMenuItem
                     onClick={() => handleDelete(presentation.id)}
                     className="cursor-pointer text-destructive"

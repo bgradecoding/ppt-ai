@@ -164,20 +164,26 @@ export function GenerateImageDialogContent({
 }
 
 export default function ImageGenerationModel() {
-  const { imageGenerationModelOpen, setImageGenerationModelOpen } =
-    usePresentationState();
+  // const { imageGenerationModelOpen, setImageGenerationModelOpen } =
+  //   usePresentationState(); // Commented out due to missing state properties
   const [isGenerating, setIsGenerating] = useState(false);
+  // Local state for open, or pass as props if needed elsewhere
+  const [localOpen, setLocalOpen] = useState(false); 
+
   return (
     <AlertDialog
-      open={imageGenerationModelOpen}
+      // open={imageGenerationModelOpen} // Commented out
+      open={localOpen} // Using local state for now
       onOpenChange={(value) => {
-        setImageGenerationModelOpen(value);
+        // setImageGenerationModelOpen(value); // Commented out
+        setLocalOpen(value); // Using local state for now
         setIsGenerating(false);
       }}
     >
       <AlertDialogContent className="gap-6">
         <GenerateImageDialogContent
-          setOpen={setImageGenerationModelOpen}
+          // setOpen={setImageGenerationModelOpen} // Commented out
+          setOpen={setLocalOpen} // Using local state for now
           isGenerating={isGenerating}
           setIsGenerating={setIsGenerating}
         />

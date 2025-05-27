@@ -12,14 +12,8 @@ export const env = createEnv({
     TOGETHER_AI_API_KEY: z.string(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
-    NEXTAUTH_URL: z.preprocess(
-      (str) => process.env.VERCEL_URL ?? str,
-      process.env.VERCEL ? z.string() : z.string().url()
-    ),
-    NEXTAUTH_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
+    // NEXTAUTH_URL removed
+    // NEXTAUTH_SECRET removed
   },
 
   runtimeEnv: {
@@ -29,8 +23,8 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     TOGETHER_AI_API_KEY: process.env.TOGETHER_AI_API_KEY,
-    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    // NEXTAUTH_SECRET removed
+    // NEXTAUTH_URL removed
   },
 
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

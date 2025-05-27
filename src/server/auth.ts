@@ -1,100 +1,73 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { type Adapter } from "next-auth/adapters";
-import GoogleProvider from "next-auth/providers/google";
+// import { PrismaAdapter } from "@auth/prisma-adapter"; // Removed
+// import { type Adapter } from "next-auth/adapters"; // Removed
+// import GoogleProvider from "next-auth/providers/google"; // Removed
 import { env } from "@/env";
 import { db } from "@/server/db";
-import NextAuth, { type Session, type DefaultSession } from "next-auth";
-declare module "next-auth" {
-  interface Session extends DefaultSession {
-    user: {
-      id: string;
-      hasAccess: boolean;
-      location?: string;
-      role: string;
-      isAdmin: boolean;
-    } & DefaultSession["user"];
-  }
+// NextAuth, Session, DefaultSession are not used, so their import is removed.
 
-  interface User {
-    hasAccess: boolean;
-    role: string;
-  }
-}
+// declare module "next-auth" block removed as no other files import Session or User from "next-auth"
 
-export const { auth, handlers, signIn, signOut } = NextAuth({
-  trustHost: true,
-  session: {
-    strategy: "jwt",
-  },
-  callbacks: {
-    async jwt({ token, user, trigger, session }) {
-      if (user) {
-        token.id = user.id;
-        token.hasAccess = user.hasAccess;
-        token.name = user.name;
-        token.image = user.image;
-        token.picture = user.image;
-        token.location = (user as Session["user"]).location;
-        token.role = user.role;
-        token.isAdmin = user.role === "ADMIN";
-      }
+// Removed NextAuth(...) call and its options
+// export const { auth, handlers, signIn, signOut } = NextAuth({
+//   trustHost: true,
+//   session: {
+//     strategy: "jwt",
+//   },
+//   callbacks: {
+//     async jwt({ token, user, trigger, session }) {
+//       if (user) {
+//         token.id = user.id;
+//         token.name = user.name;
+//         token.image = user.image;
+//         token.picture = user.image;
+//       }
 
-      // Handle updates
-      if (trigger === "update" && (session as Session)?.user) {
-        const user = await db.user.findUnique({
-          where: { id: token.id as string },
-        });
-        console.log("Session", session, user);
-        if (session) {
-          token.name = (session as Session).user.name;
-          token.image = (session as Session).user.image;
-          token.picture = (session as Session).user.image;
-          token.location = (session as Session).user.location;
-          token.role = (session as Session).user.role;
-          token.isAdmin = (session as Session).user.role === "ADMIN";
-        }
-        if (user) {
-          token.hasAccess = user?.hasAccess ?? false;
-          token.role = user.role;
-          token.isAdmin = user.role === "ADMIN";
-        }
-      }
+//       // Handle updates
+//       if (trigger === "update" && (session as Session)?.user) {
+//         const user = await db.user.findUnique({
+//           where: { id: token.id as string },
+//         });
+//         console.log("Session", session, user);
+//         if (session) {
+//           token.name = (session as Session).user.name;
+//           token.image = (session as Session).user.image;
+//           token.picture = (session as Session).user.image;
+//         }
+//       }
 
-      return token;
-    },
-    async session({ session, token }) {
-      session.user.id = token.id as string;
-      session.user.hasAccess = token.hasAccess as boolean;
-      session.user.location = token.location as string;
-      session.user.role = token.role as string;
-      session.user.isAdmin = token.role === "ADMIN";
-      return session;
-    },
-    async signIn({ user, account }) {
-      if (account?.provider === "google") {
-        const dbUser = await db.user.findUnique({
-          where: { email: user.email! },
-          select: { id: true, hasAccess: true, role: true },
-        });
+//       return token;
+//     },
+//     async session({ session, token }) {
+//       session.user.id = token.id as string;
+//       return session;
+//     },
+//     async signIn({ user, account }) {
+//       if (account?.provider === "google") {
+//         const dbUser = await db.user.findUnique({
+//           where: { email: user.email! },
+//           select: { id: true },
+//         });
 
-        if (dbUser) {
-          user.hasAccess = dbUser.hasAccess;
-          user.role = dbUser.role;
-        } else {
-          user.hasAccess = false;
-          user.role = "USER";
-        }
-      }
+//         if (!dbUser) {
+//           // Potentially create user or handle as needed
+//         }
+//       }
 
-      return true;
-    },
-  },
+//       return true;
+//     },
+//   },
 
-  adapter: PrismaAdapter(db) as Adapter,
-  providers: [
-    GoogleProvider({
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-    }),
-  ],
-});
+//   adapter: PrismaAdapter(db) as Adapter,
+//   providers: [
+//     GoogleProvider({
+//       clientId: env.GOOGLE_CLIENT_ID,
+//       clientSecret: env.GOOGLE_CLIENT_SECRET,
+//     }),
+//   ],
+// });
+
+// Add any other necessary exports or code here if needed, otherwise the file can be deleted if empty.
+// For now, let's keep the imports that might be used by other files,
+// but if not, this file might be deleted later.
+export { env, db }; // PrismaAdapter, GoogleProvider, Adapter removed from exports
+// export type { Adapter }; // Adapter type removed

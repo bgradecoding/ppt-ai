@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  getUserCustomThemes,
+  getAllCustomThemes, // Changed from getUserCustomThemes
   getPublicCustomThemes,
 } from "@/app/_actions/presentation/theme-actions";
 import { ThemeCreator } from "./ThemeCreator";
@@ -58,9 +58,9 @@ export function ThemeModal({ children }: { children?: ReactNode }) {
 
   // Fetch user themes with React Query
   const { data: userThemes = [], isLoading: isLoadingUserThemes } = useQuery({
-    queryKey: ["userThemes"],
+    queryKey: ["userThemes"], // Consider renaming queryKey
     queryFn: async () => {
-      const result = await getUserCustomThemes();
+      const result = await getAllCustomThemes(); // Changed to getAllCustomThemes
       return result.success ? (result.themes as CustomTheme[]) : [];
     },
     enabled: isOpen,
